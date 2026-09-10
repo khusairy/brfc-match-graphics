@@ -1,14 +1,14 @@
 # BRFC Match Graphics
 
-Standalone prototype for adding a professional football scoreboard to recorded friendly-match footage.
+Browser-based generator for a professional football scoreboard overlay.
 
-## Prototype workflow
+## CapCut workflow
 
-1. Open `index.html` in a browser.
-2. Load the recorded match video.
-3. Enter the match details and add team logos.
-4. Move the playhead to the correct moments and mark kick-off, goals, half-time and full-time.
-5. Preview the scoreboard as the video plays.
-6. Download the project JSON containing the timeline.
+1. Finish the timing structure of your CapCut match edit first.
+2. Enter the final duration and the CapCut timeline position for kick-off, goals, half-time and full-time.
+3. Click the matching event button for each timeline position.
+4. Click **Render green-screen overlay**.
+5. Keep Chrome or Edge open while the browser renders in real time.
+6. Import the downloaded WebM into CapCut, put it on the track above the match and apply **Chroma Key** to the green background (#00FF00).
 
-The prototype intentionally keeps the video local in the browser. The next phase is to use the confirmed timeline to render the final video with the scoreboard permanently composited onto the footage.
+No raw match video is uploaded, stored or required by the generator.

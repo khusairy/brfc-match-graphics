@@ -127,7 +127,8 @@ function renderEvents() {
   if (!state.events.length) { list.innerHTML = '<div class="empty-events">No events marked yet. Move the video to the right moment and add an event.</div>'; return; }
   [...state.events].sort((a, b) => a.videoSecond - b.videoSecond).forEach((event) => {
     const row = document.createElement('div'); row.className = 'event-row';
-    row.innerHTML = `<span class="event-time">${formatTime(event.videoSecond)}</span><span class="event-label">${labels[event.type]}</span><button class="delete-event" aria-label="Delete event">Remove</button>`;
+    const scorer = event.scorer ? ` — ${event.scorer}` : '';
+    row.innerHTML = `<span class="event-time">${formatTime(event.videoSecond)}</span><span class="event-label">${labels[event.type]}${scorer}</span><button class="delete-event" aria-label="Delete event">Remove</button>`;
     row.querySelector('button').addEventListener('click', () => { state.events = state.events.filter((item) => item.id !== event.id); render(); });
     list.appendChild(row);
   });
@@ -145,11 +146,13 @@ function bindText(inputId, outputId, target = 'textContent') {
 }
 
 function addEvent(type) {
-  const manualPosition = parseTime($('eventTimeInput').value);
-  const videoSecond = manualPosition || Number(video.currentTime || 0);
+  const eventTimeField = $('eventTimeInput');
+  const hasManualPosition = eventTimeField.value.trim() !== '';
+  const videoSecond = hasManualPosition ? parseTime(eventTimeField.value) : Number(video.currentTime || 0);
+  const scorer = type.startsWith('goal-') ? $('scorerInput').value.trim() : '';
   const duplicate = state.events.find((event) => event.type === type);
   if (['kickoff', 'halftime', 'second-half', 'fulltime'].includes(type) && duplicate) state.events = state.events.filter((event) => event.type !== type);
-  state.events.push({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, type, videoSecond: Math.round(videoSecond * 100) / 100 });
+  state.events.push({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, type, videoSecond: Math.round(videoSecond * 100) / 100, scorer });
   render();
 }
 
@@ -237,7 +240,7 @@ $('videoScrubber').addEventListener('input', (event) => { video.currentTime = Nu
 document.querySelectorAll('[data-event]').forEach((button) => button.addEventListener('click', () => addEvent(button.dataset.event)));
 bindText('titleInput', 'overlayTitle'); bindText('homeNameInput', 'homeNamePreview'); bindText('awayNameInput', 'awayNamePreview');
 $('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); }); $('customDurationInput').addEventListener('input', render);
-$('eventTimeInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
+$('eventTimeInput').addEventListener('input', render); $('scorerInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
 bindColourControls('homeColourInput', 'homeColourPicker'); bindColourControls('awayColourInput', 'awayColourPicker');
 
 function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state[`${side}LogoUrl`]) URL.revokeObjectURL(state[`${side}LogoUrl`]); state[`${side}LogoUrl`] = URL.createObjectURL(file); const image = $(imageId); image.src = state[`${side}LogoUrl`]; image.hidden = false; const canvasImage = new Image(); canvasImage.addEventListener('load', () => { state[`${side}Logo`] = canvasImage; }); canvasImage.src = state[`${side}LogoUrl`]; }); }

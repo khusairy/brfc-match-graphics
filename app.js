@@ -146,7 +146,7 @@ function drawScoreboard(ctx, timelineSecond) {
   const awayColour = $('awayColourInput').value || '#2879d8';
   const homeLogoBackground = $('homeLogoBackgroundInput').value || '#ffffff';
   const awayLogoBackground = $('awayLogoBackgroundInput').value || '#ffffff';
-  const x = 760; const y = 68; const width = 400; const titleHeight = 30; const mainHeight = 86; const footerHeight = 38; const teamWidth = width / 2; const scoreWidth = 62; const codeWidth = 22;
+  const x = 70; const y = 65; const width = 400; const titleHeight = 30; const mainHeight = 86; const footerHeight = 38; const teamWidth = width / 2; const scoreWidth = 62; const codeWidth = 22;
   ctx.fillStyle = '#00ff00'; ctx.fillRect(0, 0, 1920, 1080);
   ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 25; ctx.shadowOffsetY = 9;
   ctx.fillStyle = '#151f30'; roundedRect(ctx, x, y, width, titleHeight + mainHeight + footerHeight, 6); ctx.fill();

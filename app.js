@@ -2,6 +2,8 @@ const state = {
   videoUrl: null,
   homeLogoUrl: null,
   awayLogoUrl: null,
+  homeLogo: null,
+  awayLogo: null,
   events: [],
   format: 'halves-90',
 };
@@ -96,7 +98,8 @@ function render() {
   $('videoScrubber').value = position;
   $('scorebug').style.setProperty('--home-colour', $('homeColourInput').value);
   $('scorebug').style.setProperty('--away-colour', $('awayColourInput').value);
-  $('scorebug').style.setProperty('background', $('homeColourInput').value);
+  $('scorebug').style.setProperty('--home-logo-background', $('homeLogoBackgroundInput').value);
+  $('scorebug').style.setProperty('--away-logo-background', $('awayLogoBackgroundInput').value);
   renderEvents();
 }
 
@@ -141,7 +144,9 @@ function drawScoreboard(ctx, timelineSecond) {
   const awayName = $('awayNameInput').value || 'AWAY';
   const homeColour = $('homeColourInput').value || '#e54646';
   const awayColour = $('awayColourInput').value || '#2879d8';
-  const x = 710; const y = 68; const width = 500; const titleHeight = 32; const mainHeight = 80; const footerHeight = 38; const teamWidth = width / 2; const scoreWidth = 72;
+  const homeLogoBackground = $('homeLogoBackgroundInput').value || '#ffffff';
+  const awayLogoBackground = $('awayLogoBackgroundInput').value || '#ffffff';
+  const x = 760; const y = 68; const width = 400; const titleHeight = 30; const mainHeight = 86; const footerHeight = 38; const teamWidth = width / 2; const scoreWidth = 62; const codeWidth = 22;
   ctx.fillStyle = '#00ff00'; ctx.fillRect(0, 0, 1920, 1080);
   ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 25; ctx.shadowOffsetY = 9;
   ctx.fillStyle = '#151f30'; roundedRect(ctx, x, y, width, titleHeight + mainHeight + footerHeight, 6); ctx.fill();
@@ -150,12 +155,14 @@ function drawScoreboard(ctx, timelineSecond) {
   ctx.fillStyle = '#f6f8fb'; ctx.font = '900 14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(title.toUpperCase(), x + width / 2, y + titleHeight / 2);
   ctx.fillStyle = homeColour; ctx.fillRect(x, y + titleHeight, teamWidth, mainHeight);
   ctx.fillStyle = awayColour; ctx.fillRect(x + teamWidth, y + titleHeight, teamWidth, mainHeight);
-  ctx.fillStyle = '#fff'; ctx.fillRect(x + teamWidth - scoreWidth, y + titleHeight, scoreWidth, mainHeight);
-  ctx.fillRect(x + teamWidth, y + titleHeight, scoreWidth, mainHeight);
-  ctx.fillStyle = '#ffffff'; ctx.font = '900 13px Arial'; ctx.textAlign = 'center'; ctx.fillText(homeName.toUpperCase(), x + 27, y + titleHeight + mainHeight / 2);
-  ctx.fillText(awayName.toUpperCase(), x + width - 27, y + titleHeight + mainHeight / 2);
-  ctx.fillStyle = '#111827'; ctx.font = '900 51px Arial'; ctx.fillText(String(score.home), x + teamWidth - scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
-  ctx.fillText(String(score.away), x + teamWidth + scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
+  ctx.fillStyle = homeLogoBackground; ctx.fillRect(x + codeWidth + scoreWidth, y + titleHeight, teamWidth - codeWidth - scoreWidth, mainHeight);
+  ctx.fillStyle = awayLogoBackground; ctx.fillRect(x + teamWidth, y + titleHeight, teamWidth - codeWidth - scoreWidth, mainHeight);
+  ctx.fillStyle = '#ffffff'; ctx.font = '900 10px Arial'; ctx.textAlign = 'center'; ctx.fillText(homeName.toUpperCase(), x + codeWidth / 2, y + titleHeight + mainHeight / 2);
+  ctx.fillText(awayName.toUpperCase(), x + width - codeWidth / 2, y + titleHeight + mainHeight / 2);
+  ctx.font = '900 54px Arial'; ctx.fillText(String(score.home), x + codeWidth + scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
+  ctx.fillText(String(score.away), x + width - codeWidth - scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
+  if (state.homeLogo) drawContain(ctx, state.homeLogo, x + codeWidth + scoreWidth, y + titleHeight, teamWidth - codeWidth - scoreWidth, mainHeight, 10);
+  if (state.awayLogo) drawContain(ctx, state.awayLogo, x + teamWidth, y + titleHeight, teamWidth - codeWidth - scoreWidth, mainHeight, 10);
   ctx.fillStyle = '#e53946'; roundedRect(ctx, x, y + titleHeight + mainHeight, width, footerHeight, 0, false, false, true, true); ctx.fill();
   ctx.fillStyle = '#ffffff'; ctx.font = '900 24px monospace'; ctx.textAlign = 'center'; ctx.fillText(formatTime(currentMatchSecond(timelineSecond)), x + width / 2, y + titleHeight + mainHeight + footerHeight / 2);
 }
@@ -173,6 +180,15 @@ function roundedRect(ctx, x, y, width, height, radius, topLeft = true, topRight 
   ctx.lineTo(x, y + (topLeft ? r : 0));
   if (topLeft) ctx.quadraticCurveTo(x, y, x + r, y); else ctx.lineTo(x, y);
   ctx.closePath();
+}
+
+function drawContain(ctx, image, x, y, width, height, padding = 0) {
+  const availableWidth = width - padding * 2;
+  const availableHeight = height - padding * 2;
+  const scale = Math.min(availableWidth / image.width, availableHeight / image.height);
+  const drawWidth = image.width * scale;
+  const drawHeight = image.height * scale;
+  ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
 }
 
 async function renderOverlay() {
@@ -210,12 +226,12 @@ document.querySelectorAll('[data-event]').forEach((button) => button.addEventLis
 bindText('titleInput', 'overlayTitle'); bindText('homeNameInput', 'homeNamePreview'); bindText('awayNameInput', 'awayNamePreview');
 $('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); }); $('customDurationInput').addEventListener('input', render);
 $('eventTimeInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
-$('homeColourInput').addEventListener('input', render); $('awayColourInput').addEventListener('input', render);
+$('homeColourInput').addEventListener('input', render); $('awayColourInput').addEventListener('input', render); $('homeLogoBackgroundInput').addEventListener('input', render); $('awayLogoBackgroundInput').addEventListener('input', render);
 
-function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state[`${side}LogoUrl`]) URL.revokeObjectURL(state[`${side}LogoUrl`]); state[`${side}LogoUrl`] = URL.createObjectURL(file); const image = $(imageId); image.src = state[`${side}LogoUrl`]; image.hidden = false; }); }
+function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state[`${side}LogoUrl`]) URL.revokeObjectURL(state[`${side}LogoUrl`]); state[`${side}LogoUrl`] = URL.createObjectURL(file); const image = $(imageId); image.src = state[`${side}LogoUrl`]; image.hidden = false; const canvasImage = new Image(); canvasImage.addEventListener('load', () => { state[`${side}Logo`] = canvasImage; }); canvasImage.src = state[`${side}LogoUrl`]; }); }
 loadLogo('homeLogoInput', 'homeLogoPreview', 'home'); loadLogo('awayLogoInput', 'awayLogoPreview', 'away');
 
-function projectData() { return { version: 1, type: 'brfc-match-graphics-project', match: { title: $('titleInput').value, homeName: $('homeNameInput').value, awayName: $('awayNameInput').value, homeColour: $('homeColourInput').value, awayColour: $('awayColourInput').value, format: $('formatInput').value, customDuration: $('customDurationInput').value }, events: state.events.sort((a, b) => a.videoSecond - b.videoSecond), videoFileName: $('videoInput').files[0]?.name || null, exportedAt: new Date().toISOString() }; }
+function projectData() { return { version: 1, type: 'brfc-match-graphics-project', match: { title: $('titleInput').value, homeName: $('homeNameInput').value, awayName: $('awayNameInput').value, homeColour: $('homeColourInput').value, awayColour: $('awayColourInput').value, homeLogoBackground: $('homeLogoBackgroundInput').value, awayLogoBackground: $('awayLogoBackgroundInput').value, format: $('formatInput').value, customDuration: $('customDurationInput').value }, events: state.events.sort((a, b) => a.videoSecond - b.videoSecond), videoFileName: $('videoInput').files[0]?.name || null, exportedAt: new Date().toISOString() }; }
 function downloadProject() { const blob = new Blob([JSON.stringify(projectData(), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `${$('homeNameInput').value}-${$('awayNameInput').value}-graphics.json`; anchor.click(); URL.revokeObjectURL(url); }
 $('downloadProject').addEventListener('click', downloadProject); $('downloadProjectSecondary').addEventListener('click', downloadProject);
 $('renderOverlay').addEventListener('click', renderOverlay);

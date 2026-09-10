@@ -31,6 +31,19 @@ function colourValue(inputId, fallback) {
   return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
 }
 
+function bindColourControls(textInputId, pickerInputId) {
+  const textInput = $(textInputId);
+  const pickerInput = $(pickerInputId);
+  textInput.addEventListener('input', () => {
+    if (/^#[0-9a-f]{6}$/i.test(textInput.value.trim())) pickerInput.value = textInput.value.trim();
+    render();
+  });
+  pickerInput.addEventListener('input', () => {
+    textInput.value = pickerInput.value.toUpperCase();
+    render();
+  });
+}
+
 function matchSettings() {
   const format = $('formatInput').value;
   const total = format === 'halves-90' || format === 'three-30' ? 90 : format === 'halves-60' ? 60 : format === 'straight-15' ? 15 : format === 'straight-20' ? 20 : Number($('customDurationInput').value || 45);
@@ -225,7 +238,7 @@ document.querySelectorAll('[data-event]').forEach((button) => button.addEventLis
 bindText('titleInput', 'overlayTitle'); bindText('homeNameInput', 'homeNamePreview'); bindText('awayNameInput', 'awayNamePreview');
 $('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); }); $('customDurationInput').addEventListener('input', render);
 $('eventTimeInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
-$('homeColourInput').addEventListener('input', render); $('awayColourInput').addEventListener('input', render);
+bindColourControls('homeColourInput', 'homeColourPicker'); bindColourControls('awayColourInput', 'awayColourPicker');
 
 function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state[`${side}LogoUrl`]) URL.revokeObjectURL(state[`${side}LogoUrl`]); state[`${side}LogoUrl`] = URL.createObjectURL(file); const image = $(imageId); image.src = state[`${side}LogoUrl`]; image.hidden = false; const canvasImage = new Image(); canvasImage.addEventListener('load', () => { state[`${side}Logo`] = canvasImage; }); canvasImage.src = state[`${side}LogoUrl`]; }); }
 loadLogo('homeLogoInput', 'homeLogoPreview', 'home'); loadLogo('awayLogoInput', 'awayLogoPreview', 'away');

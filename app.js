@@ -92,22 +92,29 @@ function applyLogoDataUrl(side, dataUrl) {
   canvasImage.src = dataUrl;
 }
 
+function applyDraft(draft, statusText) {
+  if (!draft?.match) throw new Error('This is not a BRFC Match Graphics project file.');
+  const fields = ['title', 'homeName', 'awayName', 'homeColour', 'awayColour', 'format', 'customDuration', 'overlayDuration'];
+  fields.forEach((name) => {
+    const input = $(`${name}Input`);
+    if (input && draft.match[name] !== undefined) input.value = draft.match[name];
+  });
+  $('homeColourPicker').value = colourValue('homeColourInput', '#e54646');
+  $('awayColourPicker').value = colourValue('awayColourInput', '#2879d8');
+  state.format = $('formatInput').value;
+  state.events = Array.isArray(draft.events) ? draft.events : [];
+  applyLogoDataUrl('home', draft.assets?.homeLogoDataUrl);
+  applyLogoDataUrl('away', draft.assets?.awayLogoDataUrl);
+  syncPeriodControls();
+  render();
+  $('draftStatus').textContent = statusText;
+}
+
 function restoreDraft() {
   try {
     const draft = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || 'null');
     if (!draft?.match) return;
-    const fields = ['title', 'homeName', 'awayName', 'homeColour', 'awayColour', 'format', 'customDuration', 'overlayDuration'];
-    fields.forEach((name) => {
-      const input = $(`${name}Input`);
-      if (input && draft.match[name] !== undefined) input.value = draft.match[name];
-    });
-    $('homeColourPicker').value = colourValue('homeColourInput', '#e54646');
-    $('awayColourPicker').value = colourValue('awayColourInput', '#2879d8');
-    state.format = $('formatInput').value;
-    state.events = Array.isArray(draft.events) ? draft.events : [];
-    applyLogoDataUrl('home', draft.assets?.homeLogoDataUrl);
-    applyLogoDataUrl('away', draft.assets?.awayLogoDataUrl);
-    $('draftStatus').textContent = `Restored private browser backup from ${new Date(draft.savedAt).toLocaleString()}.`;
+    applyDraft(draft, `Restored private browser backup from ${new Date(draft.savedAt).toLocaleString()}.`);
   } catch (error) {
     localStorage.removeItem(DRAFT_STORAGE_KEY);
   }
@@ -309,6 +316,19 @@ async function renderOverlay(testDuration = null) {
 }
 
 $('videoInput').addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state.videoUrl) URL.revokeObjectURL(state.videoUrl); state.videoUrl = URL.createObjectURL(file); video.src = state.videoUrl; $('emptyVideo').hidden = true; video.load(); });
+$('importProject').addEventListener('change', async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  try {
+    const project = JSON.parse(await file.text());
+    applyDraft(project, `Loaded ${file.name}. Saved privately in this browser.`);
+    queueDraftSave();
+  } catch (error) {
+    $('draftStatus').textContent = 'Could not load that file. Choose a BRFC render-project JSON file.';
+  } finally {
+    event.target.value = '';
+  }
+});
 video.addEventListener('loadedmetadata', () => { $('videoScrubber').max = video.duration; render(); });
 video.addEventListener('timeupdate', render);
 $('videoScrubber').addEventListener('input', (event) => { video.currentTime = Number(event.target.value); render(); });

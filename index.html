@@ -10,108 +10,50 @@
   <body>
     <main class="app-shell">
       <header class="topbar">
-        <div class="brand-lockup">
-          <div class="brand-mark">BR</div>
-          <div>
-            <p class="eyebrow">Braven Rovers FC</p>
-            <h1>Match Graphics</h1>
-          </div>
-        </div>
-        <div class="topbar-actions">
-          <button class="button button-ghost" id="overlayToggle">Overlay only</button>
-          <button class="button button-primary" id="downloadProject">Download project</button>
-        </div>
+        <div class="brand-lockup"><div class="brand-mark">BR</div><div><p class="eyebrow">Braven Rovers FC</p><h1>Match Graphics</h1></div></div>
+        <div class="topbar-actions"><button class="button button-primary" id="downloadProject">Download project</button></div>
       </header>
-
       <section class="workspace">
         <div class="preview-column">
-          <div class="section-heading">
-            <div>
-              <p class="eyebrow">Recorded match editor</p>
-              <h2>Preview</h2>
-            </div>
-            <label class="upload-button button button-secondary">
-              Load video
-              <input id="videoInput" type="file" accept="video/*" hidden />
-            </label>
-          </div>
-
-          <div class="video-stage" id="videoStage">
-            <video id="matchVideo" controls playsinline></video>
+          <div class="section-heading"><div><p class="eyebrow">Recorded match editor</p><h2>Scoreboard preview</h2></div></div>
+          <div class="video-stage">
             <div class="scorebug" id="scorebug">
               <div class="scorebug-title" id="overlayTitle">FRIENDLY MATCH</div>
-              <div class="scorebug-main">
-                <div class="team team-home">
-                  <img id="homeLogoPreview" class="team-logo" alt="Home team logo" hidden />
-                  <span id="homeNamePreview">BRFC</span>
-                </div>
-                <div class="score"> <span id="homeScorePreview">0</span><span class="score-divider">–</span><span id="awayScorePreview">0</span></div>
-                <div class="team team-away">
-                  <span id="awayNamePreview">OPPONENT</span>
-                  <img id="awayLogoPreview" class="team-logo" alt="Away team logo" hidden />
-                </div>
-              </div>
-              <div class="scorebug-footer">
-                <span id="matchStatusPreview">PRE-MATCH</span>
-                <strong id="clockPreview">00:00</strong>
-              </div>
+              <div class="scorebug-main"><div class="team team-home"><img id="homeLogoPreview" class="team-logo" alt="" hidden /><span id="homeNamePreview">BRFC</span></div><div class="score"><span id="homeScorePreview">0</span><span class="score-divider">–</span><span id="awayScorePreview">0</span></div><div class="team team-away"><span id="awayNamePreview">OPPONENT</span><img id="awayLogoPreview" class="team-logo" alt="" hidden /></div></div>
+              <div class="scorebug-footer"><span id="matchStatusPreview">PRE-MATCH</span><strong id="clockPreview">00:00</strong></div>
             </div>
-            <div class="empty-video" id="emptyVideo">Load a recorded match to begin</div>
+            <div class="empty-video">This is the graphic that will render on green screen.</div>
           </div>
-
-          <div class="transport-panel">
-            <span class="time-readout" id="videoTimeReadout">00:00 / 00:00</span>
-            <input id="videoScrubber" type="range" min="0" max="0" value="0" step="0.01" />
-          </div>
-
           <div class="timeline-panel">
-            <div class="timeline-header">
-              <div>
-                <p class="eyebrow">Event timeline</p>
-                <h3>Mark what happens in the match</h3>
-              </div>
-              <span class="current-position" id="currentPosition">Video position: 00:00</span>
-            </div>
-            <div class="event-actions">
-              <button class="event-button" data-event="kickoff">Kick-off</button>
-              <button class="event-button event-home" data-event="goal-home">Goal — home</button>
-              <button class="event-button event-away" data-event="goal-away">Goal — away</button>
-              <button class="event-button" data-event="halftime">Half-time</button>
-              <button class="event-button" data-event="second-half">Second-half kick-off</button>
-              <button class="event-button" data-event="fulltime">Full-time</button>
-            </div>
+            <div class="timeline-header"><div><p class="eyebrow">Event timeline</p><h3>Set a timeline position, then add the event</h3></div></div>
+            <div class="event-actions"><button class="event-button" data-event="kickoff">Kick-off</button><button class="event-button event-home" data-event="goal-home">Goal — home</button><button class="event-button event-away" data-event="goal-away">Goal — away</button><button class="event-button" data-event="halftime">Half-time</button><button class="event-button" data-event="second-half">Second-half kick-off</button><button class="event-button" data-event="fulltime">Full-time</button></div>
             <div class="event-list" id="eventList"></div>
           </div>
         </div>
-
         <aside class="settings-column">
           <section class="card">
             <div class="card-heading"><span class="step-number">01</span><div><p class="eyebrow">Match details</p><h3>Scoreboard setup</h3></div></div>
             <label>Competition or match title<input id="titleInput" value="FRIENDLY MATCH" /></label>
-            <div class="field-grid">
-              <label>Home team<input id="homeNameInput" value="BRFC" /></label>
-              <label>Away team<input id="awayNameInput" value="OPPONENT" /></label>
-            </div>
-            <div class="field-grid">
-              <label>Home colour<input id="homeColourInput" type="color" value="#e54646" /></label>
-              <label>Away colour<input id="awayColourInput" type="color" value="#2879d8" /></label>
-            </div>
-            <div class="field-grid">
-              <label>Home logo<input id="homeLogoInput" type="file" accept="image/*" /></label>
-              <label>Away logo<input id="awayLogoInput" type="file" accept="image/*" /></label>
-            </div>
+            <div class="field-grid"><label>Home team<input id="homeNameInput" value="BRFC" /></label><label>Away team<input id="awayNameInput" value="OPPONENT" /></label></div>
+            <div class="field-grid"><label>Home colour<input id="homeColourInput" type="color" value="#e54646" /></label><label>Away colour<input id="awayColourInput" type="color" value="#2879d8" /></label></div>
+            <div class="field-grid"><label>Home logo<input id="homeLogoInput" type="file" accept="image/*" /></label><label>Away logo<input id="awayLogoInput" type="file" accept="image/*" /></label></div>
           </section>
-
           <section class="card">
             <div class="card-heading"><span class="step-number">02</span><div><p class="eyebrow">Match clock</p><h3>Choose the format</h3></div></div>
             <label>Clock format<select id="formatInput"><option value="halves-90">Two halves — 90 minutes</option><option value="halves-60">Two halves — 60 minutes</option><option value="straight-15">Straight time — 15 minutes</option><option value="straight-20">Straight time — 20 minutes</option><option value="custom">Custom duration</option></select></label>
             <label id="customDurationWrap" hidden>Custom duration in minutes<input id="customDurationInput" type="number" min="1" max="240" value="45" /></label>
-            <p class="helper-text">The clock follows the event markers, so the video can start before kick-off and include pauses.</p>
           </section>
-
+          <section class="card">
+            <div class="card-heading"><span class="step-number">03</span><div><p class="eyebrow">Overlay timeline</p><h3>Use your final CapCut timings</h3></div></div>
+            <label>Final video duration (MM:SS)<input id="overlayDurationInput" value="60:00" /></label>
+            <label>Timeline position for next event (MM:SS)<input id="eventTimeInput" value="00:00" /></label>
+            <p class="helper-text">Do not use raw-video timing. Enter the time in your final CapCut timeline, then add the event.</p>
+          </section>
           <section class="card export-card">
-            <div class="card-heading"><span class="step-number">03</span><div><p class="eyebrow">Post-production</p><h3>Save your work</h3></div></div>
-            <p class="helper-text">This prototype saves the match setup and event timeline as a JSON project. Video rendering will be added after the workflow is confirmed.</p>
+            <div class="card-heading"><span class="step-number">04</span><div><p class="eyebrow">CapCut overlay</p><h3>Export green-screen video</h3></div></div>
+            <p class="helper-text">Creates a 1920×1080 WebM at 30fps. Browser rendering is real time, so keep this tab open until it finishes.</p>
+            <button class="button button-primary button-wide" id="renderOverlay">Render green-screen overlay</button>
+            <p class="helper-text" id="renderStatus"></p>
             <button class="button button-primary button-wide" id="downloadProjectSecondary">Download project JSON</button>
             <button class="button button-ghost button-wide" id="clearEvents">Clear event timeline</button>
           </section>

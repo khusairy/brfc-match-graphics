@@ -32,7 +32,7 @@ const ffmpeg = spawn(ffmpegPath, [
 
 for (let second = 0; second < duration; second += 1) {
   drawScorebug(second);
-  if (!ffmpeg.stdin.write(canvas.toBuffer('raw'))) await new Promise((resolveDrain) => ffmpeg.stdin.once('drain', resolveDrain));
+  if (!ffmpeg.stdin.write(canvas.data())) await new Promise((resolveDrain) => ffmpeg.stdin.once('drain', resolveDrain));
   if (second % 30 === 0 || second === duration - 1) process.stdout.write(`\rRendering ${formatTime(second + 1)} / ${formatTime(duration)}`);
 }
 ffmpeg.stdin.end();

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b111d" />
     <title>BRFC Match Graphics</title>
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="styles.css?v=5" />
   </head>
   <body>
     <main class="app-shell">
@@ -124,7 +124,9 @@
               <li>Install <a href="https://nodejs.org/">Node.js LTS</a> once, then drag your downloaded render-project JSON onto <code>render-project.bat</code>.</li>
             </ol>
             <p class="render-status">The MP4 will be saved beside your JSON file. Add it above the match in CapCut and use Chroma Key on green.</p>
+            <p class="draft-status" id="draftStatus">Match details are saved only in this browser.</p>
             <button class="button button-primary button-wide" id="downloadProjectSecondary">Download render project</button>
+            <button class="button button-ghost button-wide" id="clearSavedDraft">Forget saved browser draft</button>
             <button class="button button-ghost button-wide" id="clearEvents">Clear event timeline</button>
           </section>
         </aside>

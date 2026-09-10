@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b111d" />
     <title>BRFC Match Graphics</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=4" />
   </head>
   <body>
     <main class="app-shell">
@@ -91,12 +91,8 @@
               <label>Away team<input id="awayNameInput" value="OPPONENT" /></label>
             </div>
             <div class="field-grid">
-              <label>Home colour<input id="homeColourInput" type="color" value="#e54646" /></label>
-              <label>Away colour<input id="awayColourInput" type="color" value="#2879d8" /></label>
-            </div>
-            <div class="field-grid">
-              <label>Home logo background<input id="homeLogoBackgroundInput" type="color" value="#ffffff" /></label>
-              <label>Away logo background<input id="awayLogoBackgroundInput" type="color" value="#ffffff" /></label>
+              <label>Home colour (HEX)<input id="homeColourInput" value="#e54646" maxlength="7" spellcheck="false" /></label>
+              <label>Away colour (HEX)<input id="awayColourInput" value="#2879d8" maxlength="7" spellcheck="false" /></label>
             </div>
             <div class="field-grid">
               <label>Home logo<input id="homeLogoInput" type="file" accept="image/*" /></label>

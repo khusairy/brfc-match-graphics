@@ -8,6 +8,9 @@ const state = {
   format: 'halves-90',
 };
 
+const DRAFT_STORAGE_KEY = 'brfc-match-graphics-draft-v1';
+let draftSaveTimer = null;
+
 const $ = (id) => document.getElementById(id);
 const video = $('matchVideo');
 
@@ -36,12 +39,78 @@ function bindColourControls(textInputId, pickerInputId) {
   const pickerInput = $(pickerInputId);
   textInput.addEventListener('input', () => {
     if (/^#[0-9a-f]{6}$/i.test(textInput.value.trim())) pickerInput.value = textInput.value.trim();
-    render();
+    render(); queueDraftSave();
   });
   pickerInput.addEventListener('input', () => {
     textInput.value = pickerInput.value.toUpperCase();
-    render();
+    render(); queueDraftSave();
   });
+}
+
+function draftSnapshot() {
+  return {
+    version: 1,
+    savedAt: new Date().toISOString(),
+    match: {
+      title: $('titleInput').value,
+      homeName: $('homeNameInput').value,
+      awayName: $('awayNameInput').value,
+      homeColour: colourValue('homeColourInput', '#e54646'),
+      awayColour: colourValue('awayColourInput', '#2879d8'),
+      format: $('formatInput').value,
+      customDuration: $('customDurationInput').value,
+      overlayDuration: $('overlayDurationInput').value,
+    },
+    events: state.events,
+    assets: {
+      homeLogoDataUrl: state.homeLogoDataUrl || null,
+      awayLogoDataUrl: state.awayLogoDataUrl || null,
+    },
+  };
+}
+
+function queueDraftSave() {
+  window.clearTimeout(draftSaveTimer);
+  draftSaveTimer = window.setTimeout(() => {
+    try {
+      localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draftSnapshot()));
+      $('draftStatus').textContent = 'Saved privately in this browser. Download the render project for a portable backup.';
+    } catch (error) {
+      $('draftStatus').textContent = 'Browser backup could not save the logos. Download the render project to keep a full backup.';
+    }
+  }, 250);
+}
+
+function applyLogoDataUrl(side, dataUrl) {
+  state[`${side}LogoDataUrl`] = dataUrl || null;
+  const image = $(`${side}LogoPreview`);
+  if (!dataUrl) { image.hidden = true; image.removeAttribute('src'); state[`${side}Logo`] = null; return; }
+  image.src = dataUrl;
+  image.hidden = false;
+  const canvasImage = new Image();
+  canvasImage.addEventListener('load', () => { state[`${side}Logo`] = canvasImage; render(); });
+  canvasImage.src = dataUrl;
+}
+
+function restoreDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(DRAFT_STORAGE_KEY) || 'null');
+    if (!draft?.match) return;
+    const fields = ['title', 'homeName', 'awayName', 'homeColour', 'awayColour', 'format', 'customDuration', 'overlayDuration'];
+    fields.forEach((name) => {
+      const input = $(`${name}Input`);
+      if (input && draft.match[name] !== undefined) input.value = draft.match[name];
+    });
+    $('homeColourPicker').value = colourValue('homeColourInput', '#e54646');
+    $('awayColourPicker').value = colourValue('awayColourInput', '#2879d8');
+    state.format = $('formatInput').value;
+    state.events = Array.isArray(draft.events) ? draft.events : [];
+    applyLogoDataUrl('home', draft.assets?.homeLogoDataUrl);
+    applyLogoDataUrl('away', draft.assets?.awayLogoDataUrl);
+    $('draftStatus').textContent = `Restored private browser backup from ${new Date(draft.savedAt).toLocaleString()}.`;
+  } catch (error) {
+    localStorage.removeItem(DRAFT_STORAGE_KEY);
+  }
 }
 
 function matchSettings() {
@@ -129,7 +198,7 @@ function renderEvents() {
     const row = document.createElement('div'); row.className = 'event-row';
     const scorer = event.scorer ? ` — ${event.scorer}` : '';
     row.innerHTML = `<span class="event-time">${formatTime(event.videoSecond)}</span><span class="event-label">${labels[event.type]}${scorer}</span><button class="delete-event" aria-label="Delete event">Remove</button>`;
-    row.querySelector('button').addEventListener('click', () => { state.events = state.events.filter((item) => item.id !== event.id); render(); });
+    row.querySelector('button').addEventListener('click', () => { state.events = state.events.filter((item) => item.id !== event.id); render(); queueDraftSave(); });
     list.appendChild(row);
   });
 }
@@ -142,7 +211,7 @@ function syncPeriodControls() {
 }
 
 function bindText(inputId, outputId, target = 'textContent') {
-  $(inputId).addEventListener('input', () => { $(outputId)[target] = $(inputId).value || ''; render(); });
+  $(inputId).addEventListener('input', () => { $(outputId)[target] = $(inputId).value || ''; render(); queueDraftSave(); });
 }
 
 function addEvent(type) {
@@ -153,7 +222,7 @@ function addEvent(type) {
   const duplicate = state.events.find((event) => event.type === type);
   if (['kickoff', 'halftime', 'second-half', 'fulltime'].includes(type) && duplicate) state.events = state.events.filter((event) => event.type !== type);
   state.events.push({ id: crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`, type, videoSecond: Math.round(videoSecond * 100) / 100, scorer });
-  render();
+  render(); queueDraftSave();
 }
 
 function drawScoreboard(ctx, timelineSecond) {
@@ -245,21 +314,24 @@ video.addEventListener('timeupdate', render);
 $('videoScrubber').addEventListener('input', (event) => { video.currentTime = Number(event.target.value); render(); });
 document.querySelectorAll('[data-event]').forEach((button) => button.addEventListener('click', () => addEvent(button.dataset.event)));
 bindText('titleInput', 'overlayTitle'); bindText('homeNameInput', 'homeNamePreview'); bindText('awayNameInput', 'awayNamePreview');
-$('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); }); $('customDurationInput').addEventListener('input', render);
-$('eventTimeInput').addEventListener('input', render); $('scorerInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
+$('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); queueDraftSave(); }); $('customDurationInput').addEventListener('input', () => { render(); queueDraftSave(); });
+$('eventTimeInput').addEventListener('input', render); $('scorerInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', () => { render(); queueDraftSave(); });
 bindColourControls('homeColourInput', 'homeColourPicker'); bindColourControls('awayColourInput', 'awayColourPicker');
 
-function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state[`${side}LogoUrl`]) URL.revokeObjectURL(state[`${side}LogoUrl`]); state[`${side}LogoUrl`] = URL.createObjectURL(file); const image = $(imageId); image.src = state[`${side}LogoUrl`]; image.hidden = false; const canvasImage = new Image(); canvasImage.addEventListener('load', () => { state[`${side}Logo`] = canvasImage; }); canvasImage.src = state[`${side}LogoUrl`]; }); }
+function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', async (event) => { const file = event.target.files[0]; if (!file) return; applyLogoDataUrl(side, await readFileAsDataUrl(file)); queueDraftSave(); }); }
 loadLogo('homeLogoInput', 'homeLogoPreview', 'home'); loadLogo('awayLogoInput', 'awayLogoPreview', 'away');
 
 function readFileAsDataUrl(file) {
   if (!file) return Promise.resolve(null);
   return new Promise((resolve, reject) => { const reader = new FileReader(); reader.addEventListener('load', () => resolve(reader.result)); reader.addEventListener('error', reject); reader.readAsDataURL(file); });
 }
-async function projectData() { return { version: 2, type: 'brfc-match-graphics-render-project', match: { title: $('titleInput').value, homeName: $('homeNameInput').value, awayName: $('awayNameInput').value, homeColour: colourValue('homeColourInput', '#e54646'), awayColour: colourValue('awayColourInput', '#2879d8'), format: $('formatInput').value, customDuration: $('customDurationInput').value, overlayDuration: $('overlayDurationInput').value }, events: state.events.sort((a, b) => a.videoSecond - b.videoSecond), assets: { homeLogoDataUrl: await readFileAsDataUrl($('homeLogoInput').files[0]), awayLogoDataUrl: await readFileAsDataUrl($('awayLogoInput').files[0]) }, videoFileName: $('videoInput').files[0]?.name || null, exportedAt: new Date().toISOString() }; }
-async function downloadProject() { const blob = new Blob([JSON.stringify(await projectData(), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `${$('homeNameInput').value}-${$('awayNameInput').value}-render-project.json`; anchor.click(); URL.revokeObjectURL(url); }
+async function projectData() { return { ...draftSnapshot(), version: 2, type: 'brfc-match-graphics-render-project', videoFileName: $('videoInput').files[0]?.name || null, exportedAt: new Date().toISOString() }; }
+async function downloadProject() { const blob = new Blob([JSON.stringify(await projectData(), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `${$('homeNameInput').value}-${$('awayNameInput').value}-render-project.json`; anchor.click(); URL.revokeObjectURL(url); $('draftStatus').textContent = 'Project backup downloaded. Keep this JSON private; it includes your match setup and crests.'; }
 $('downloadProject').addEventListener('click', downloadProject); $('downloadProjectSecondary').addEventListener('click', downloadProject);
-$('clearEvents').addEventListener('click', () => { if (state.events.length && !confirm('Clear all marked events?')) return; state.events = []; render(); });
+$('clearEvents').addEventListener('click', () => { if (state.events.length && !confirm('Clear all marked events?')) return; state.events = []; render(); queueDraftSave(); });
+$('clearSavedDraft').addEventListener('click', () => { if (!confirm('Forget this saved match setup on this browser? Your downloaded JSON files will not be affected.')) return; localStorage.removeItem(DRAFT_STORAGE_KEY); $('draftStatus').textContent = 'Saved browser backup removed. The current page remains unchanged until you refresh.'; });
 $('overlayToggle').addEventListener('click', () => { document.body.classList.toggle('overlay-only'); $('overlayToggle').textContent = document.body.classList.contains('overlay-only') ? 'Exit overlay' : 'Overlay only'; });
+syncPeriodControls();
+restoreDraft();
 syncPeriodControls();
 render();

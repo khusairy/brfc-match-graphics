@@ -8,6 +8,15 @@ if "%~1"=="" (
   exit /b 1
 )
 
+echo %~nx1 | findstr /i /c:"-render-project.json" >nul
+if errorlevel 1 (
+  echo This is not a BRFC render-project JSON file.
+  echo Go back to the Match Graphics website, click "Download render project",
+  echo then drag that downloaded file onto this batch file.
+  pause
+  exit /b 1
+)
+
 where node >nul 2>nul
 if errorlevel 1 (
   echo Node.js LTS is required. Install it from https://nodejs.org/ then run this again.

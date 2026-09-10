@@ -26,6 +26,11 @@ function parseTime(value) {
   return parts[0] * 3600 + parts[1] * 60 + parts[2];
 }
 
+function colourValue(inputId, fallback) {
+  const value = $(inputId).value.trim();
+  return /^#[0-9a-f]{6}$/i.test(value) ? value : fallback;
+}
+
 function matchSettings() {
   const format = $('formatInput').value;
   const total = format === 'halves-90' || format === 'three-30' ? 90 : format === 'halves-60' ? 60 : format === 'straight-15' ? 15 : format === 'straight-20' ? 20 : Number($('customDurationInput').value || 45);
@@ -96,10 +101,8 @@ function render() {
   $('videoTimeReadout').textContent = `${formatTime(position)} / ${formatTime(video.duration)}`;
   $('currentPosition').textContent = `Video position: ${formatTime(position)}`;
   $('videoScrubber').value = position;
-  $('scorebug').style.setProperty('--home-colour', $('homeColourInput').value);
-  $('scorebug').style.setProperty('--away-colour', $('awayColourInput').value);
-  $('scorebug').style.setProperty('--home-logo-background', $('homeLogoBackgroundInput').value);
-  $('scorebug').style.setProperty('--away-logo-background', $('awayLogoBackgroundInput').value);
+  $('scorebug').style.setProperty('--home-colour', colourValue('homeColourInput', '#e54646'));
+  $('scorebug').style.setProperty('--away-colour', colourValue('awayColourInput', '#2879d8'));
   renderEvents();
 }
 
@@ -142,10 +145,8 @@ function drawScoreboard(ctx, timelineSecond) {
   const title = $('titleInput').value || 'FRIENDLY MATCH';
   const homeName = $('homeNameInput').value || 'HOME';
   const awayName = $('awayNameInput').value || 'AWAY';
-  const homeColour = $('homeColourInput').value || '#e54646';
-  const awayColour = $('awayColourInput').value || '#2879d8';
-  const homeLogoBackground = $('homeLogoBackgroundInput').value || '#ffffff';
-  const awayLogoBackground = $('awayLogoBackgroundInput').value || '#ffffff';
+  const homeColour = colourValue('homeColourInput', '#e54646');
+  const awayColour = colourValue('awayColourInput', '#2879d8');
   const x = 70; const y = 65; const width = 400; const titleHeight = 30; const mainHeight = 86; const footerHeight = 38; const teamWidth = width / 2; const scoreWidth = 62; const codeWidth = 22;
   ctx.fillStyle = '#00ff00'; ctx.fillRect(0, 0, 1920, 1080);
   ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 25; ctx.shadowOffsetY = 9;
@@ -155,8 +156,6 @@ function drawScoreboard(ctx, timelineSecond) {
   ctx.fillStyle = '#f6f8fb'; ctx.font = '900 14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(title.toUpperCase(), x + width / 2, y + titleHeight / 2);
   ctx.fillStyle = homeColour; ctx.fillRect(x, y + titleHeight, teamWidth, mainHeight);
   ctx.fillStyle = awayColour; ctx.fillRect(x + teamWidth, y + titleHeight, teamWidth, mainHeight);
-  ctx.fillStyle = homeLogoBackground; ctx.fillRect(x + codeWidth + scoreWidth, y + titleHeight, teamWidth - codeWidth - scoreWidth, mainHeight);
-  ctx.fillStyle = awayLogoBackground; ctx.fillRect(x + teamWidth, y + titleHeight, teamWidth - codeWidth - scoreWidth, mainHeight);
   ctx.fillStyle = '#ffffff'; ctx.font = '900 10px Arial'; ctx.textAlign = 'center'; ctx.fillText(homeName.toUpperCase(), x + codeWidth / 2, y + titleHeight + mainHeight / 2);
   ctx.fillText(awayName.toUpperCase(), x + width - codeWidth / 2, y + titleHeight + mainHeight / 2);
   ctx.font = '900 54px Arial'; ctx.fillText(String(score.home), x + codeWidth + scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
@@ -226,12 +225,12 @@ document.querySelectorAll('[data-event]').forEach((button) => button.addEventLis
 bindText('titleInput', 'overlayTitle'); bindText('homeNameInput', 'homeNamePreview'); bindText('awayNameInput', 'awayNamePreview');
 $('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); }); $('customDurationInput').addEventListener('input', render);
 $('eventTimeInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
-$('homeColourInput').addEventListener('input', render); $('awayColourInput').addEventListener('input', render); $('homeLogoBackgroundInput').addEventListener('input', render); $('awayLogoBackgroundInput').addEventListener('input', render);
+$('homeColourInput').addEventListener('input', render); $('awayColourInput').addEventListener('input', render);
 
 function loadLogo(inputId, imageId, side) { $(inputId).addEventListener('change', (event) => { const file = event.target.files[0]; if (!file) return; if (state[`${side}LogoUrl`]) URL.revokeObjectURL(state[`${side}LogoUrl`]); state[`${side}LogoUrl`] = URL.createObjectURL(file); const image = $(imageId); image.src = state[`${side}LogoUrl`]; image.hidden = false; const canvasImage = new Image(); canvasImage.addEventListener('load', () => { state[`${side}Logo`] = canvasImage; }); canvasImage.src = state[`${side}LogoUrl`]; }); }
 loadLogo('homeLogoInput', 'homeLogoPreview', 'home'); loadLogo('awayLogoInput', 'awayLogoPreview', 'away');
 
-function projectData() { return { version: 1, type: 'brfc-match-graphics-project', match: { title: $('titleInput').value, homeName: $('homeNameInput').value, awayName: $('awayNameInput').value, homeColour: $('homeColourInput').value, awayColour: $('awayColourInput').value, homeLogoBackground: $('homeLogoBackgroundInput').value, awayLogoBackground: $('awayLogoBackgroundInput').value, format: $('formatInput').value, customDuration: $('customDurationInput').value }, events: state.events.sort((a, b) => a.videoSecond - b.videoSecond), videoFileName: $('videoInput').files[0]?.name || null, exportedAt: new Date().toISOString() }; }
+function projectData() { return { version: 1, type: 'brfc-match-graphics-project', match: { title: $('titleInput').value, homeName: $('homeNameInput').value, awayName: $('awayNameInput').value, homeColour: colourValue('homeColourInput', '#e54646'), awayColour: colourValue('awayColourInput', '#2879d8'), format: $('formatInput').value, customDuration: $('customDurationInput').value }, events: state.events.sort((a, b) => a.videoSecond - b.videoSecond), videoFileName: $('videoInput').files[0]?.name || null, exportedAt: new Date().toISOString() }; }
 function downloadProject() { const blob = new Blob([JSON.stringify(projectData(), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `${$('homeNameInput').value}-${$('awayNameInput').value}-graphics.json`; anchor.click(); URL.revokeObjectURL(url); }
 $('downloadProject').addEventListener('click', downloadProject); $('downloadProjectSecondary').addEventListener('click', downloadProject);
 $('renderOverlay').addEventListener('click', renderOverlay);

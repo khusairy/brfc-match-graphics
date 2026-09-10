@@ -109,7 +109,7 @@
 
           <section class="card">
             <div class="card-heading"><span class="step-number">03</span><div><p class="eyebrow">Overlay timeline</p><h3>Enter final edit timings</h3></div></div>
-            <label>Final video duration (MM:SS)<input id="overlayDurationInput" value="60:00" inputmode="numeric" /></label>
+            <label>Final video duration (MM:SS)<input id="overlayDurationInput" value="" placeholder="06:23" inputmode="numeric" /></label>
             <label>Goal or event time (MM:SS)<input id="eventTimeInput" value="" placeholder="02:05" inputmode="numeric" /></label>
             <label>Goal scorer (optional)<input id="scorerInput" placeholder="e.g. Peauldray" /></label>
             <p class="helper-text">Type the actual match time first, for example <strong>02:05</strong>, then click Goal — home or Goal — away. Leave it blank only when you want to use the video’s current position.</p>
@@ -117,9 +117,10 @@
 
           <section class="card export-card">
             <div class="card-heading"><span class="step-number">04</span><div><p class="eyebrow">CapCut overlay</p><h3>Export green-screen video</h3></div></div>
-            <p class="helper-text">The browser records a 1920×1080 green-screen WebM at 30fps. Rendering happens in real time, so keep this tab open until it finishes.</p>
+            <p class="helper-text">The browser records a 1920×1080 green-screen WebM at 30fps. A `06:23` overlay takes 6 minutes 23 seconds to render. Keep this tab open until it downloads.</p>
+            <p class="render-status" id="renderStatus" aria-live="polite">Enter the final video duration, then render a 10-second test first.</p>
             <button class="button button-primary button-wide" id="renderOverlay">Render green-screen overlay</button>
-            <p class="render-status" id="renderStatus" aria-live="polite"></p>
+            <button class="button button-ghost button-wide" id="renderTest">Render 10-second test</button>
             <button class="button button-primary button-wide" id="downloadProjectSecondary">Download project JSON</button>
             <button class="button button-ghost button-wide" id="clearEvents">Clear event timeline</button>
           </section>

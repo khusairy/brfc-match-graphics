@@ -19,7 +19,7 @@
         </div>
         <div class="topbar-actions">
           <button class="button button-ghost" id="overlayToggle">Overlay only</button>
-          <button class="button button-primary" id="downloadProject">Download project</button>
+          <button class="button button-primary" id="downloadProject">Download render project</button>
         </div>
       </header>
 
@@ -116,12 +116,10 @@
           </section>
 
           <section class="card export-card">
-            <div class="card-heading"><span class="step-number">04</span><div><p class="eyebrow">CapCut overlay</p><h3>Export green-screen video</h3></div></div>
-            <p class="helper-text">The browser records a 1920×1080 green-screen WebM at 30fps. A `06:23` overlay takes 6 minutes 23 seconds to render. Keep this tab open until it downloads.</p>
-            <p class="render-status" id="renderStatus" aria-live="polite">Enter the final video duration, then render a 10-second test first.</p>
-            <button class="button button-primary button-wide" id="renderOverlay">Render green-screen overlay</button>
-            <button class="button button-ghost button-wide" id="renderTest">Render 10-second test</button>
-            <button class="button button-primary button-wide" id="downloadProjectSecondary">Download project JSON</button>
+            <div class="card-heading"><span class="step-number">04</span><div><p class="eyebrow">CapCut overlay</p><h3>Fast MP4 rendering</h3></div></div>
+            <p class="helper-text">Download the render project, then run the included FFmpeg renderer. It generates the full green-screen MP4 much faster than real time.</p>
+            <p class="render-status">Your logo files, colours, goal times and final-video duration are included in the downloaded project.</p>
+            <button class="button button-primary button-wide" id="downloadProjectSecondary">Download render project</button>
             <button class="button button-ghost button-wide" id="clearEvents">Clear event timeline</button>
           </section>
         </aside>

@@ -206,22 +206,28 @@ function drawContain(ctx, image, x, y, width, height, padding = 0) {
   ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
 }
 
-async function renderOverlay() {
-  const duration = parseTime($('overlayDurationInput').value);
-  if (!duration) { $('renderStatus').textContent = 'Enter a valid final video duration first, for example 62:30.'; return; }
+async function renderOverlay(testDuration = null) {
+  const duration = testDuration || parseTime($('overlayDurationInput').value);
+  if (!duration) { $('renderStatus').textContent = 'Enter a valid final video duration first, for example 06:23.'; return; }
   if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) { $('renderStatus').textContent = 'This browser does not support local video rendering. Use the latest Chrome or Edge.'; return; }
-  const button = $('renderOverlay'); button.disabled = true; button.textContent = 'Rendering…';
-  $('renderStatus').textContent = `Rendering ${formatTime(duration)} in real time. Keep this tab open.`;
+  const button = testDuration ? $('renderTest') : $('renderOverlay');
+  const otherButton = testDuration ? $('renderOverlay') : $('renderTest');
+  button.disabled = true; otherButton.disabled = true; button.textContent = 'Rendering…';
+  $('renderStatus').textContent = `Rendering 00:00 / ${formatTime(duration)} in real time. Keep this tab open.`;
   const canvas = document.createElement('canvas'); canvas.width = 1920; canvas.height = 1080;
   const ctx = canvas.getContext('2d');
   const stream = canvas.captureStream(30);
   const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9') ? 'video/webm;codecs=vp9' : 'video/webm';
   const chunks = []; const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8_000_000 });
   recorder.addEventListener('dataavailable', (event) => { if (event.data.size) chunks.push(event.data); });
+  recorder.addEventListener('error', () => {
+    button.disabled = false; otherButton.disabled = false; button.textContent = testDuration ? 'Render 10-second test' : 'Render green-screen overlay';
+    $('renderStatus').textContent = 'The browser could not render this overlay. Please use the latest Chrome or Edge and try the 10-second test again.';
+  });
   recorder.addEventListener('stop', () => {
     const blob = new Blob(chunks, { type: 'video/webm' }); const url = URL.createObjectURL(blob); const link = document.createElement('a');
-    link.href = url; link.download = `${$('homeNameInput').value || 'home'}-vs-${$('awayNameInput').value || 'away'}-scoreboard-greenscreen.webm`; link.click(); URL.revokeObjectURL(url);
-    button.disabled = false; button.textContent = 'Render green-screen overlay'; $('renderStatus').textContent = 'Overlay downloaded. Import it above the match in CapCut, then apply Chroma Key to the green background.';
+    link.href = url; link.download = `${$('homeNameInput').value || 'home'}-vs-${$('awayNameInput').value || 'away'}-scoreboard${testDuration ? '-test' : '-greenscreen'}.webm`; link.click(); URL.revokeObjectURL(url);
+    button.disabled = false; otherButton.disabled = false; button.textContent = testDuration ? 'Render 10-second test' : 'Render green-screen overlay'; $('renderStatus').textContent = 'Overlay downloaded. Import it above the match in CapCut, then apply Chroma Key to the green background.';
     stream.getTracks().forEach((track) => track.stop());
   });
   recorder.start(1000); const startedAt = performance.now();
@@ -250,6 +256,7 @@ function projectData() { return { version: 1, type: 'brfc-match-graphics-project
 function downloadProject() { const blob = new Blob([JSON.stringify(projectData(), null, 2)], { type: 'application/json' }); const url = URL.createObjectURL(blob); const anchor = document.createElement('a'); anchor.href = url; anchor.download = `${$('homeNameInput').value}-${$('awayNameInput').value}-graphics.json`; anchor.click(); URL.revokeObjectURL(url); }
 $('downloadProject').addEventListener('click', downloadProject); $('downloadProjectSecondary').addEventListener('click', downloadProject);
 $('renderOverlay').addEventListener('click', renderOverlay);
+$('renderTest').addEventListener('click', () => renderOverlay(10));
 $('clearEvents').addEventListener('click', () => { if (state.events.length && !confirm('Clear all marked events?')) return; state.events = []; render(); });
 $('overlayToggle').addEventListener('click', () => { document.body.classList.toggle('overlay-only'); $('overlayToggle').textContent = document.body.classList.contains('overlay-only') ? 'Exit overlay' : 'Overlay only'; });
 syncPeriodControls();

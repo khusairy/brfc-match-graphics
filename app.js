@@ -26,8 +26,8 @@ function parseTime(value) {
 
 function matchSettings() {
   const format = $('formatInput').value;
-  const total = format === 'halves-90' ? 90 : format === 'halves-60' ? 60 : format === 'straight-15' ? 15 : format === 'straight-20' ? 20 : Number($('customDurationInput').value || 45);
-  return { format, totalMinutes: Math.max(1, total), halfMinutes: format.startsWith('halves') ? total / 2 : null };
+  const total = format === 'halves-90' || format === 'three-30' ? 90 : format === 'halves-60' ? 60 : format === 'straight-15' ? 15 : format === 'straight-20' ? 20 : Number($('customDurationInput').value || 45);
+  return { format, totalMinutes: Math.max(1, total), halfMinutes: format.startsWith('halves') ? total / 2 : null, threePeriods: format === 'three-30', periodMinutes: format === 'three-30' ? 30 : null };
 }
 
 function currentMatchSecond(videoSecond) {
@@ -36,6 +36,20 @@ function currentMatchSecond(videoSecond) {
   const settings = matchSettings();
   const halftime = state.events.find((e) => e.type === 'halftime');
   const secondHalf = state.events.find((e) => e.type === 'second-half');
+  const secondBreak = state.events.find((e) => e.type === 'second-break');
+  const thirdHalf = state.events.find((e) => e.type === 'third-half');
+  if (settings.threePeriods) {
+    const period = settings.periodMinutes * 60;
+    if (halftime && videoSecond >= halftime.videoSecond) {
+      if (!secondHalf || videoSecond < secondHalf.videoSecond) return period;
+      if (secondBreak && videoSecond >= secondBreak.videoSecond) {
+        if (!thirdHalf || videoSecond < thirdHalf.videoSecond) return period * 2;
+        return Math.min(settings.totalMinutes * 60, period * 2 + (videoSecond - thirdHalf.videoSecond));
+      }
+      return Math.min(period * 2, period + (videoSecond - secondHalf.videoSecond));
+    }
+    return Math.min(period, videoSecond - kickoff.videoSecond);
+  }
   if (settings.halfMinutes && halftime && videoSecond >= halftime.videoSecond) {
     if (!secondHalf || videoSecond < secondHalf.videoSecond) return settings.halfMinutes * 60;
     return Math.min(settings.totalMinutes * 60, settings.halfMinutes * 60 + (videoSecond - secondHalf.videoSecond));
@@ -56,9 +70,16 @@ function statusAt(videoSecond) {
   const kickoff = state.events.find((e) => e.type === 'kickoff');
   const halftime = state.events.find((e) => e.type === 'halftime');
   const secondHalf = state.events.find((e) => e.type === 'second-half');
+  const secondBreak = state.events.find((e) => e.type === 'second-break');
+  const thirdHalf = state.events.find((e) => e.type === 'third-half');
   const fulltime = state.events.find((e) => e.type === 'fulltime');
   if (!kickoff || videoSecond < kickoff.videoSecond) return 'PRE-MATCH';
   if (fulltime && videoSecond >= fulltime.videoSecond) return 'FULL-TIME';
+  if ($('formatInput').value === 'three-30') {
+    if (secondBreak && videoSecond >= secondBreak.videoSecond && (!thirdHalf || videoSecond < thirdHalf.videoSecond)) return 'BREAK 2';
+    if (halftime && videoSecond >= halftime.videoSecond && (!secondHalf || videoSecond < secondHalf.videoSecond)) return 'BREAK 1';
+    return 'LIVE';
+  }
   if (halftime && videoSecond >= halftime.videoSecond && (!secondHalf || videoSecond < secondHalf.videoSecond)) return 'HALF-TIME';
   return 'LIVE';
 }
@@ -80,7 +101,8 @@ function render() {
 }
 
 function renderEvents() {
-  const labels = { kickoff: 'Kick-off', 'goal-home': `Goal — ${$('homeNameInput').value}`, 'goal-away': `Goal — ${$('awayNameInput').value}`, halftime: 'Half-time', 'second-half': 'Second-half kick-off', fulltime: 'Full-time' };
+  const threePeriods = $('formatInput').value === 'three-30';
+  const labels = { kickoff: 'Kick-off', 'goal-home': `Goal — ${$('homeNameInput').value}`, 'goal-away': `Goal — ${$('awayNameInput').value}`, halftime: threePeriods ? 'End period 1' : 'Half-time', 'second-half': threePeriods ? 'Start period 2' : 'Second-half kick-off', 'second-break': 'End period 2', 'third-half': 'Start period 3', fulltime: 'Full-time' };
   const list = $('eventList');
   list.innerHTML = '';
   if (!state.events.length) { list.innerHTML = '<div class="empty-events">No events marked yet. Move the video to the right moment and add an event.</div>'; return; }
@@ -90,6 +112,13 @@ function renderEvents() {
     row.querySelector('button').addEventListener('click', () => { state.events = state.events.filter((item) => item.id !== event.id); render(); });
     list.appendChild(row);
   });
+}
+
+function syncPeriodControls() {
+  const threePeriods = $('formatInput').value === 'three-30';
+  $('periodOneEndButton').textContent = threePeriods ? 'End period 1' : 'Half-time';
+  $('periodTwoStartButton').textContent = threePeriods ? 'Start period 2' : 'Second-half kick-off';
+  document.querySelectorAll('.three-period-event').forEach((button) => { button.hidden = !threePeriods; });
 }
 
 function bindText(inputId, outputId, target = 'textContent') {
@@ -184,7 +213,7 @@ video.addEventListener('timeupdate', render);
 $('videoScrubber').addEventListener('input', (event) => { video.currentTime = Number(event.target.value); render(); });
 document.querySelectorAll('[data-event]').forEach((button) => button.addEventListener('click', () => addEvent(button.dataset.event)));
 bindText('titleInput', 'overlayTitle'); bindText('homeNameInput', 'homeNamePreview'); bindText('awayNameInput', 'awayNamePreview');
-$('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; render(); }); $('customDurationInput').addEventListener('input', render);
+$('formatInput').addEventListener('change', () => { state.format = $('formatInput').value; $('customDurationWrap').hidden = state.format !== 'custom'; syncPeriodControls(); render(); }); $('customDurationInput').addEventListener('input', render);
 $('eventTimeInput').addEventListener('input', render); $('overlayDurationInput').addEventListener('input', render);
 $('homeColourInput').addEventListener('input', render); $('awayColourInput').addEventListener('input', render);
 
@@ -197,4 +226,5 @@ $('downloadProject').addEventListener('click', downloadProject); $('downloadProj
 $('renderOverlay').addEventListener('click', renderOverlay);
 $('clearEvents').addEventListener('click', () => { if (state.events.length && !confirm('Clear all marked events?')) return; state.events = []; render(); });
 $('overlayToggle').addEventListener('click', () => { document.body.classList.toggle('overlay-only'); $('overlayToggle').textContent = document.body.classList.contains('overlay-only') ? 'Exit overlay' : 'Overlay only'; });
+syncPeriodControls();
 render();

@@ -76,8 +76,10 @@
               <button class="event-button" data-event="kickoff">Kick-off</button>
               <button class="event-button event-home" data-event="goal-home">Goal — home</button>
               <button class="event-button event-away" data-event="goal-away">Goal — away</button>
-              <button class="event-button" data-event="halftime">Half-time</button>
-              <button class="event-button" data-event="second-half">Second-half kick-off</button>
+              <button class="event-button" id="periodOneEndButton" data-event="halftime">Half-time</button>
+              <button class="event-button" id="periodTwoStartButton" data-event="second-half">Second-half kick-off</button>
+              <button class="event-button three-period-event" data-event="second-break" hidden>End period 2</button>
+              <button class="event-button three-period-event" data-event="third-half" hidden>Start period 3</button>
               <button class="event-button" data-event="fulltime">Full-time</button>
             </div>
             <div class="event-list" id="eventList"></div>
@@ -104,7 +106,7 @@
 
           <section class="card">
             <div class="card-heading"><span class="step-number">02</span><div><p class="eyebrow">Match clock</p><h3>Choose the format</h3></div></div>
-            <label>Clock format<select id="formatInput"><option value="halves-90">Two halves — 90 minutes</option><option value="halves-60">Two halves — 60 minutes</option><option value="straight-15">Straight time — 15 minutes</option><option value="straight-20">Straight time — 20 minutes</option><option value="custom">Custom duration</option></select></label>
+            <label>Clock format<select id="formatInput"><option value="halves-90">Two halves — 90 minutes</option><option value="halves-60">Two halves — 60 minutes</option><option value="three-30">Three periods — 3 × 30 minutes</option><option value="straight-15">Straight time — 15 minutes</option><option value="straight-20">Straight time — 20 minutes</option><option value="custom">Custom duration</option></select></label>
             <label id="customDurationWrap" hidden>Custom duration in minutes<input id="customDurationInput" type="number" min="1" max="240" value="45" /></label>
             <p class="helper-text">The clock follows the event markers, so the video can start before kick-off and include pauses.</p>
           </section>

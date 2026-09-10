@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0"
 
 if "%~1"=="" (
   echo Drag a BRFC render-project JSON file onto this file.

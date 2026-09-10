@@ -141,28 +141,23 @@ function drawScoreboard(ctx, timelineSecond) {
   const awayName = $('awayNameInput').value || 'AWAY';
   const homeColour = $('homeColourInput').value || '#e54646';
   const awayColour = $('awayColourInput').value || '#2879d8';
-  const x = 530; const y = 68; const width = 860; const titleHeight = 38; const mainHeight = 102; const footerHeight = 38; const scoreWidth = 190;
+  const x = 710; const y = 68; const width = 500; const titleHeight = 32; const mainHeight = 80; const footerHeight = 38; const teamWidth = width / 2; const scoreWidth = 72;
   ctx.fillStyle = '#00ff00'; ctx.fillRect(0, 0, 1920, 1080);
-  ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 30; ctx.shadowOffsetY = 11;
-  ctx.fillStyle = '#151f30'; roundedRect(ctx, x, y, width, titleHeight + mainHeight + footerHeight, 11); ctx.fill();
+  ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 25; ctx.shadowOffsetY = 9;
+  ctx.fillStyle = '#151f30'; roundedRect(ctx, x, y, width, titleHeight + mainHeight + footerHeight, 6); ctx.fill();
   ctx.shadowColor = 'transparent';
-  ctx.fillStyle = '#1b2739'; roundedRect(ctx, x, y, width, titleHeight, 11, true, true, false, false); ctx.fill();
-  ctx.fillStyle = '#f4f6fa'; ctx.fillRect(x, y + titleHeight, width, mainHeight);
-  ctx.fillStyle = homeColour; ctx.fillRect(x, y + titleHeight, 7, mainHeight);
-  ctx.fillStyle = awayColour; ctx.fillRect(x + width - 7, y + titleHeight, 7, mainHeight);
-  ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(x + 25, y + 19, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#dce5f4'; ctx.font = '900 15px Arial'; ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(title.toUpperCase(), x + 40, y + 19);
-  ctx.fillStyle = '#91a3be'; ctx.font = '800 12px Arial'; ctx.textAlign = 'right'; ctx.fillText('BRFC MATCHDAY', x + width - 18, y + 19);
-  ctx.fillStyle = '#111827'; ctx.font = '900 28px Arial'; ctx.textAlign = 'left'; ctx.fillText(homeName.toUpperCase(), x + 37, y + titleHeight + mainHeight / 2);
-  ctx.textAlign = 'right'; ctx.fillText(awayName.toUpperCase(), x + width - 37, y + titleHeight + mainHeight / 2);
-  ctx.fillStyle = '#ffffff'; ctx.fillRect(x + (width - scoreWidth) / 2, y + titleHeight, scoreWidth, mainHeight);
-  ctx.strokeStyle = '#d4dbe5'; ctx.lineWidth = 1; ctx.strokeRect(x + (width - scoreWidth) / 2, y + titleHeight, scoreWidth, mainHeight);
-  ctx.fillStyle = '#101827'; ctx.font = '900 55px Arial'; ctx.textAlign = 'center'; ctx.fillText(`${score.home}  :  ${score.away}`, x + width / 2, y + titleHeight + mainHeight / 2 + 1);
-  ctx.fillStyle = '#101827'; roundedRect(ctx, x, y + titleHeight + mainHeight, width, footerHeight, 0, false, false, true, true); ctx.fill();
-  ctx.fillStyle = '#e94b54'; ctx.beginPath(); ctx.arc(x + 24, y + titleHeight + mainHeight + footerHeight / 2, 4, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = '#d7dfec'; ctx.font = '900 13px Arial'; ctx.textAlign = 'left'; ctx.fillText(statusAt(timelineSecond), x + 37, y + titleHeight + mainHeight + footerHeight / 2);
+  ctx.fillStyle = '#121b2c'; roundedRect(ctx, x, y, width, titleHeight, 6, true, true, false, false); ctx.fill();
+  ctx.fillStyle = '#f6f8fb'; ctx.font = '900 14px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(title.toUpperCase(), x + width / 2, y + titleHeight / 2);
+  ctx.fillStyle = homeColour; ctx.fillRect(x, y + titleHeight, teamWidth, mainHeight);
+  ctx.fillStyle = awayColour; ctx.fillRect(x + teamWidth, y + titleHeight, teamWidth, mainHeight);
+  ctx.fillStyle = '#fff'; ctx.fillRect(x + teamWidth - scoreWidth, y + titleHeight, scoreWidth, mainHeight);
+  ctx.fillRect(x + teamWidth, y + titleHeight, scoreWidth, mainHeight);
+  ctx.fillStyle = '#ffffff'; ctx.font = '900 13px Arial'; ctx.textAlign = 'center'; ctx.fillText(homeName.toUpperCase(), x + 27, y + titleHeight + mainHeight / 2);
+  ctx.fillText(awayName.toUpperCase(), x + width - 27, y + titleHeight + mainHeight / 2);
+  ctx.fillStyle = '#111827'; ctx.font = '900 51px Arial'; ctx.fillText(String(score.home), x + teamWidth - scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
+  ctx.fillText(String(score.away), x + teamWidth + scoreWidth / 2, y + titleHeight + mainHeight / 2 + 1);
+  ctx.fillStyle = '#e53946'; roundedRect(ctx, x, y + titleHeight + mainHeight, width, footerHeight, 0, false, false, true, true); ctx.fill();
   ctx.fillStyle = '#ffffff'; ctx.font = '900 24px monospace'; ctx.textAlign = 'center'; ctx.fillText(formatTime(currentMatchSecond(timelineSecond)), x + width / 2, y + titleHeight + mainHeight + footerHeight / 2);
-  ctx.fillStyle = '#90a0b8'; ctx.font = '800 11px Arial'; ctx.textAlign = 'right'; ctx.fillText('MATCH TIME', x + width - 18, y + titleHeight + mainHeight + footerHeight / 2);
 }
 
 function roundedRect(ctx, x, y, width, height, radius, topLeft = true, topRight = true, bottomRight = true, bottomLeft = true) {

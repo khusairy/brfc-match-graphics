@@ -117,8 +117,13 @@
 
           <section class="card export-card">
             <div class="card-heading"><span class="step-number">04</span><div><p class="eyebrow">CapCut overlay</p><h3>Fast MP4 rendering</h3></div></div>
-            <p class="helper-text">Download the render project, then run the included FFmpeg renderer. It generates the full green-screen MP4 much faster than real time.</p>
-            <p class="render-status">Your logo files, colours, goal times and final-video duration are included in the downloaded project.</p>
+            <p class="helper-text">This uses the fast renderer included in this GitHub repository. It creates the full green-screen MP4 much faster than real time.</p>
+            <ol class="render-steps">
+              <li>Enter the final video duration and click <strong>Download render project</strong>.</li>
+              <li><a href="https://github.com/khusairy/brfc-match-graphics/archive/refs/heads/main.zip">Download the renderer package</a> and extract the ZIP.</li>
+              <li>Install <a href="https://nodejs.org/">Node.js LTS</a> once, then drag your downloaded render-project JSON onto <code>render-project.bat</code>.</li>
+            </ol>
+            <p class="render-status">The MP4 will be saved beside your JSON file. Add it above the match in CapCut and use Chroma Key on green.</p>
             <button class="button button-primary button-wide" id="downloadProjectSecondary">Download render project</button>
             <button class="button button-ghost button-wide" id="clearEvents">Clear event timeline</button>
           </section>
